@@ -149,47 +149,39 @@ pipeline {
                 echo "Tool: SonarQube"
                 echo "Analyzing code structure, maintainability, and code smells"
                 echo "================================================"
-                
+        
                 script {
                     try {
-                        def sonarProps = """
-                            sonar-scanner \
-                            -Dsonar.projectKey=msmlogistics \
-                            -Dsonar.projectName="${PROJECT_NAME}" \
-                            -Dsonar.projectVersion=${BUILD_VERSION} \
-                            -Dsonar.sources=src \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.token=${SONARQUBE_TOKEN} \
-                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.test.js \
-                            -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js \
-                            -Dsonar.tests=src \
-                            -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
-                        """
-                        
-                        // Add organization for SonarCloud
-                        if (env.SONAR_HOST_URL.contains('sonarcloud.io')) {
-                            sonarProps += " -Dsonar.organization=${SONAR_ORGANIZATION}"
-                        }
-                        
                         withSonarQubeEnv('SonarQube') {
-                            sh sonarProps
+                            sh '''
+                                sonar-scanner \
+                                  -Dsonar.projectKey=msmlogistics \
+                                  -Dsonar.projectName="MSM Logistics" \
+                                  -Dsonar.projectVersion=${BUILD_NUMBER} \
+                                  -Dsonar.sources=src \
+                                  -Dsonar.host.url=${SONAR_HOST_URL} \
+                                  -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                                  -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.test.js \
+                                  -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js \
+                                  -Dsonar.tests=src \
+                                  -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
+                                  -Dsonar.organization=${SONAR_ORGANIZATION}
+                            '''
                         }
-                        
                         echo "✅ Code quality analysis completed"
                         echo "📊 View detailed report in SonarQube dashboard"
                     } catch (Exception e) {
                         echo "⚠️  SonarQube analysis failed: ${e.message}"
-                        echo "💡 Make sure:"
-                        echo "   1. SonarQube credential 'sonarqube-token' exists in Jenkins"
-                        echo "   2. SonarQube server 'SonarQube' is configured in Jenkins"
-                        echo "   3. sonar-scanner is installed and in PATH"
-                        echo ""
-                        echo "⏭️  Continuing pipeline (code quality check is optional for testing)"
+                        echo "💡 Check:"
+                        echo "   1. Credential 'sonarqube-token' exists in Jenkins"
+                        echo "   2. Server 'SonarQube' configured in Jenkins (Manage Jenkins → System)"
+                        echo "   3. sonar-scanner is installed on the Jenkins agent"
+                        echo "⏭️  Continuing pipeline (quality check optional)"
                     }
                 }
             }
         }
+
         
         // ========================================
         // STAGE 4: QUALITY GATE (Supporting Stage)
