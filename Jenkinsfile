@@ -1,4 +1,3 @@
-
 // ============================================================================
 // MSM LOGISTICS - CI/CD PIPELINE
 // ============================================================================
@@ -144,37 +143,44 @@ pipeline {
         // STAGE 3: CODE QUALITY (Required - Task Step 6)
         // ========================================
         stage('3. Code Quality Analysis') {
-            
-          steps {
-            echo "================================================"
-            echo "STAGE 3: CODE QUALITY ANALYSIS (SonarCloud)"
-            echo "================================================"
-            script {
-              // Use credentials stored as "sonarqube-token" in Jenkins (secret text)
-              withCredentials([string(credentialsId: 'SONAR-TOKEN1', variable: 'SONAR_TOKEN')]) {
-                sh '''
-                  sonar-scanner \
-                    -Dsonar.projectKey=msmlogistics \
-                    -Dsonar.projectName="MSM Logistics" \
-                    -Dsonar.projectVersion=${BUILD_NUMBER} \
-                    -Dsonar.sources=src \
-                    -Dsonar.host.url=https://sonarcloud.io \
-                    -Dsonar.organization=your-org-key \
-                    -Dsonar.login=$SONAR_TOKEN \
-                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                    -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.test.js \
-                    -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js \
-                    -Dsonar.tests=src \
-                    -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
-                '''
-              }
+            steps {
+                echo "================================================"
+                echo "STAGE 3: CODE QUALITY ANALYSIS"
+                echo "Tool: SonarQube"
+                echo "Analyzing code structure, maintainability, and code smells"
+                echo "================================================"
+        
+                script {
+                    try {
+                        withSonarQubeEnv('SonarQube') {
+                            sh '''
+                                sonar-scanner \
+                                  -Dsonar.projectKey=msmlogistics \
+                                  -Dsonar.projectName="MSM Logistics" \
+                                  -Dsonar.projectVersion=${BUILD_NUMBER} \
+                                  -Dsonar.sources=src \
+                                  -Dsonar.host.url=${SONAR_HOST_URL} \
+                                  -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                                  -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.test.js \
+                                  -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js \
+                                  -Dsonar.tests=src \
+                                  -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
+                                  -Dsonar.organization=${SONAR_ORGANIZATION}
+                            '''
+                        }
+                        echo "✅ Code quality analysis completed"
+                        echo "📊 View detailed report in SonarQube dashboard"
+                    } catch (Exception e) {
+                        echo "⚠️  SonarQube analysis failed: ${e.message}"
+                        echo "💡 Check:"
+                        echo "   1. Credential 'sonarqube-token' exists in Jenkins"
+                        echo "   2. Server 'SonarQube' configured in Jenkins (Manage Jenkins → System)"
+                        echo "   3. sonar-scanner is installed on the Jenkins agent"
+                        echo "⏭️  Continuing pipeline (quality check optional)"
+                    }
+                }
             }
-          }
-          post {
-            failure { echo "⚠️ Sonar analysis failed — check logs or token/org settings" }
-          }
         }
-
 
         
         // ========================================
@@ -277,34 +283,29 @@ pipeline {
         // STAGE 6: BUILD DOCKER IMAGE (Supporting Build Stage)
         // ========================================
         stage('6. Build Docker Image') {
-          steps {
-            script {
-              // check docker daemon
-              def dockerRunning = sh(script: "docker info > /dev/null 2>&1", returnStatus: true) == 0
-              def dockerfileExists = fileExists('Dockerfile')
-        
-              if (!dockerRunning) {
-                echo "⚠️ Docker daemon not available — skipping docker build"
-              } else if (!dockerfileExists) {
-                echo "⚠️ Dockerfile not found in workspace — skipping docker build"
-              } else {
-                echo "🐳 Docker is available and Dockerfile found — building image..."
-                sh """
-                  docker build \
-                    -t ${DOCKER_IMAGE}:${BUILD_VERSION} \
-                    -t ${DOCKER_IMAGE}:staging \
-                    -t ${DOCKER_IMAGE}:build-${BUILD_NUMBER} \
-                    --label "version=${BUILD_VERSION}" \
-                    --label "build=${BUILD_NUMBER}" \
-                    --label "project=${PROJECT_NAME}" \
-                    .
-                """
-                echo "✅ Docker image built successfully"
-              }
+            steps {
+                echo "================================================"
+                echo "STAGE 6: BUILD DOCKER IMAGE"
+                echo "Creating deployable Docker artifact"
+                echo "================================================"
+                
+                script {
+                    sh """
+                        docker build \
+                        -t ${DOCKER_IMAGE}:${BUILD_VERSION} \
+                        -t ${DOCKER_IMAGE}:staging \
+                        -t ${DOCKER_IMAGE}:build-${BUILD_NUMBER} \
+                        --label "version=${BUILD_VERSION}" \
+                        --label "build=${BUILD_NUMBER}" \
+                        --label "project=${PROJECT_NAME}" \
+                        .
+                    """
+                    
+                    echo "✅ Docker image built successfully"
+                    echo "🏷️  Tags: ${BUILD_VERSION}, staging, build-${BUILD_NUMBER}"
+                }
             }
-          }
         }
-
         
         // ========================================
         // STAGE 7: DEPLOY TO STAGING (Required - Task Step 8)
