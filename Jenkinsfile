@@ -54,18 +54,7 @@ pipeline {
                     echo "✅ Vitest execution completed"
                 }
             }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'coverage',
-                        reportFiles: 'index.html',
-                        reportName: 'Test Coverage Report'
-                    ])
-                }
-            }
+            
         }
 
         stage('3. Code Quality Analysis') {
