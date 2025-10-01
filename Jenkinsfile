@@ -95,49 +95,63 @@ pipeline {
             }
         }
         
-        // ========================================
-        // STAGE 2: TEST (Required - Task Step 5)
-        // ========================================
         stage('2. Test') {
             steps {
-                echo "================================================"
-                echo "STAGE 2: AUTOMATED TESTING"
-                echo "Running test suite with Jest framework"
-                echo "================================================"
                 
+                echo "================================================"
+                echo "STAGE 2: AUTOMATED TESTING (Vitest)"
+                echo "Running test suite with Vitest and generating coverage"
+                echo "================================================"
                 script {
-                    // Run tests with coverage
-                    sh 'npm test -- --watchAll=false --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html || true'
-                    
-                    echo "✅ Test execution completed"
+                    // Run the coverage script defined in package.json (vitest run --coverage)
+                    def rc = sh(script: 'npm run test:coverage', returnStatus: true)
+                    if (rc == 0) {
+                        echo "✅ Tests passed and coverage generated"
+                    } else {
+                        echo "⚠️ Tests failed or had issues (exit code ${rc})"
+                        // Mark unstable rather than hard fail so later stages can still run.
+                        // If you want to stop on test failure, replace the next line with: error "Tests failed"
+                        currentBuild.result = 'UNSTABLE'
+                    }
                 }
             }
             post {
                 always {
-                    // Publish test results (if using jest-junit)
+                    // Publish JUnit test results if they exist (allow empty)
                     junit allowEmptyResults: true, testResults: '**/junit.xml'
-                    
-                    // Publish HTML coverage report
-                    publishHTML([
-                        allowMissing: true,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'coverage',
-                        reportFiles: 'index.html',
-                        reportName: 'Test Coverage Report'
-                    ])
-                    
-                    // Display coverage summary
-                    echo "📊 Test coverage report generated"
+        
+                    // Publish HTML coverage report only if it exists
+                    script {
+                        if (fileExists('coverage/index.html')) {
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'coverage',
+                                reportFiles: 'index.html',
+                                reportName: 'Test Coverage Report'
+                            ])
+                            echo "📊 Coverage report published"
+                        } else {
+                            echo "ℹ️ Coverage report not found (coverage/index.html) — skipping publish"
+                        }
+                    }
+        
+                    // Archive coverage and test artifacts if present
+                    archiveArtifacts artifacts: 'coverage/**,coverage/**/*,**/junit.xml', allowEmptyArchive: true
                 }
                 success {
                     echo "✅ All tests passed"
                 }
+                unstable {
+                    echo "⚠️ Tests completed, but there were failures (marked UNSTABLE)"
+                }
                 failure {
-                    echo "❌ Some tests failed"
+                    echo "❌ Test stage FAILED"
                 }
             }
         }
+
         
         // ========================================
         // STAGE 3: CODE QUALITY (Required - Task Step 6)
