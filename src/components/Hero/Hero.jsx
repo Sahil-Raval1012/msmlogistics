@@ -32,10 +32,10 @@ const Hero = ({ theme }) => {
               className="text-5xl lg:text-7xl font-semibold text-secondary-200 font-philosopher"
             >
               MSM 
-              Translink
+              lOGISTICS
             </h1>
             <p  data-aos-delay="1000">
-            MSMtranslink, a platform for comprehensive transport and logistics solutions, offering efficient 3PL services and secure warehouse storage. We deliver tailored solutions to meet your unique supply chain needs with reliability and excellence.{" "}
+            MSMLogistics, a platform for comprehensive logistics solutions, offering efficient 3PL services and secure warehouse storage. We deliver tailored solutions to meet your unique supply chain needs with reliability and excellence.{" "}
             </p>
             <button
               onClick={() => {

@@ -44,7 +44,7 @@ const AccordionWithImage = () => {
               }`}
             >
               <button
-                className="w-full flex justify-between items-center p-4 text-left text-lg font-semibold text-white bg-gradient-to-r from-[#360167] to-[#af1281] hover:from-[#af1281] hover:to-[#360167] focus:outline-none"
+                className="w-full flex justify-between items-center p-4 text-left text-lg font-semibold text-secondary-200 bg-white hover:from-[#af1281] hover:to-[#360167] focus:outline-none"
                 onClick={() => toggleAccordion(index)}
               >
                 <span>{item.title}</span>

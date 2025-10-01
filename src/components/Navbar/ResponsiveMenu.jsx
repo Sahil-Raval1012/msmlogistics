@@ -44,7 +44,7 @@ const ResponsiveMenu = ({ showMenu }) => {
       <div className="footer">
         <h1>
           <a href="/" className="transition-colors duration-200 hover:text-blue-500">
-            MSMTRANSPORT
+            MSMLOGISTICS
           </a>
         </h1>
       </div>

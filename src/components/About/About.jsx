@@ -22,7 +22,7 @@ const About = () => {
                 About us
               </h1>
               <p>
-              MSMtranslink makes it easy to get your cargo where it needs to go on time and within budget. We are your top choice for freight forwarding in Geelong and beyond. We offer a wide range of freight services, including sea, air, project cargo, transportation, and customs clearance.
+              MSM Logistics makes it easy to get your cargo where it needs to go on time and within budget. We are your top choice for freight forwarding in Geelong and beyond. We offer a wide range of freight services, including sea, air, project cargo, transportation, and customs clearance.
 
 Our team is experienced and has strong leadership, and we work with a global network to get things done. We handle all your logistics needs and provide top-tier service. We’ve expanded our freight systems across multiple industries, reflecting our commitment to improvement and growth.
 
