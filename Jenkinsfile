@@ -144,44 +144,37 @@ pipeline {
         // STAGE 3: CODE QUALITY (Required - Task Step 6)
         // ========================================
         stage('3. Code Quality Analysis') {
-            steps {
-                echo "================================================"
-                echo "STAGE 3: CODE QUALITY ANALYSIS"
-                echo "Tool: SonarQube"
-                echo "Analyzing code structure, maintainability, and code smells"
-                echo "================================================"
-        
-                script {
-                    try {
-                        withSonarQubeEnv('SonarQube') {
-                            sh '''
-                                sonar-scanner \
-                                  -Dsonar.projectKey=msmlogistics \
-                                  -Dsonar.projectName="MSM Logistics" \
-                                  -Dsonar.projectVersion=${BUILD_NUMBER} \
-                                  -Dsonar.sources=src \
-                                  -Dsonar.host.url=${SONAR_HOST_URL} \
-                                  -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                                  -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.test.js \
-                                  -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js \
-                                  -Dsonar.tests=src \
-                                  -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js \
-                                  -Dsonar.organization=${SONAR_ORGANIZATION}
-                            '''
-                        }
-                        echo "✅ Code quality analysis completed"
-                        echo "📊 View detailed report in SonarQube dashboard"
-                    } catch (Exception e) {
-                        echo "⚠️  SonarQube analysis failed: ${e.message}"
-                        echo "💡 Check:"
-                        echo "   1. Credential 'sonarqube-token' exists in Jenkins"
-                        echo "   2. Server 'SonarQube' configured in Jenkins (Manage Jenkins → System)"
-                        echo "   3. sonar-scanner is installed on the Jenkins agent"
-                        echo "⏭️  Continuing pipeline (quality check optional)"
-                    }
-                }
+            
+          steps {
+            echo "================================================"
+            echo "STAGE 3: CODE QUALITY ANALYSIS (SonarCloud)"
+            echo "================================================"
+            script {
+              // Use credentials stored as "sonarqube-token" in Jenkins (secret text)
+              withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                sh '''
+                  sonar-scanner \
+                    -Dsonar.projectKey=msmlogistics \
+                    -Dsonar.projectName="MSM Logistics" \
+                    -Dsonar.projectVersion=${BUILD_NUMBER} \
+                    -Dsonar.sources=src \
+                    -Dsonar.host.url=https://sonarcloud.io \
+                    -Dsonar.organization=your-org-key \
+                    -Dsonar.login=$SONAR_TOKEN \
+                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
+                    -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.test.js \
+                    -Dsonar.coverage.exclusions=**/*.test.js,**/*.spec.js \
+                    -Dsonar.tests=src \
+                    -Dsonar.test.inclusions=**/*.test.js,**/*.spec.js
+                '''
+              }
             }
+          }
+          post {
+            failure { echo "⚠️ Sonar analysis failed — check logs or token/org settings" }
+          }
         }
+
 
         
         // ========================================
