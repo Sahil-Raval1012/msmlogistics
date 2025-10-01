@@ -151,7 +151,7 @@ pipeline {
             echo "================================================"
             script {
               // Use credentials stored as "sonarqube-token" in Jenkins (secret text)
-              withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR-TOKEN1')]) {
+              withCredentials([string(credentialsId: 'SONAR-TOKEN1', variable: 'SONAR-TOKEN1')]) {
                 sh '''
                   sonar-scanner \
                     -Dsonar.projectKey=msmlogistics \
