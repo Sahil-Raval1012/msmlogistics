@@ -8,7 +8,7 @@ pipeline {
 
   environment {
     // Credentials (update names to match your Jenkins credentials)
-    SONARQUBE_TOKEN = credentials('sonarqube-token') // secret text
+    SONARQUBE_TOKEN = credentials('SONAR_TOKEN1') // secret text
     SNYK_TOKEN = credentials('snyk-token')           // secret text
     DOCKERHUB_CREDS = credentials('dockerhub-creds') // username/password credential
 
