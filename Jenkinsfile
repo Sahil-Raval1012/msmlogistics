@@ -277,29 +277,34 @@ pipeline {
         // STAGE 6: BUILD DOCKER IMAGE (Supporting Build Stage)
         // ========================================
         stage('6. Build Docker Image') {
-            steps {
-                echo "================================================"
-                echo "STAGE 6: BUILD DOCKER IMAGE"
-                echo "Creating deployable Docker artifact"
-                echo "================================================"
-                
-                script {
-                    sh """
-                        docker build \
-                        -t ${DOCKER_IMAGE}:${BUILD_VERSION} \
-                        -t ${DOCKER_IMAGE}:staging \
-                        -t ${DOCKER_IMAGE}:build-${BUILD_NUMBER} \
-                        --label "version=${BUILD_VERSION}" \
-                        --label "build=${BUILD_NUMBER}" \
-                        --label "project=${PROJECT_NAME}" \
-                        .
-                    """
-                    
-                    echo "✅ Docker image built successfully"
-                    echo "🏷️  Tags: ${BUILD_VERSION}, staging, build-${BUILD_NUMBER}"
-                }
+          steps {
+            script {
+              // check docker daemon
+              def dockerRunning = sh(script: "docker info > /dev/null 2>&1", returnStatus: true) == 0
+              def dockerfileExists = fileExists('Dockerfile')
+        
+              if (!dockerRunning) {
+                echo "⚠️ Docker daemon not available — skipping docker build"
+              } else if (!dockerfileExists) {
+                echo "⚠️ Dockerfile not found in workspace — skipping docker build"
+              } else {
+                echo "🐳 Docker is available and Dockerfile found — building image..."
+                sh """
+                  docker build \
+                    -t ${DOCKER_IMAGE}:${BUILD_VERSION} \
+                    -t ${DOCKER_IMAGE}:staging \
+                    -t ${DOCKER_IMAGE}:build-${BUILD_NUMBER} \
+                    --label "version=${BUILD_VERSION}" \
+                    --label "build=${BUILD_NUMBER}" \
+                    --label "project=${PROJECT_NAME}" \
+                    .
+                """
+                echo "✅ Docker image built successfully"
+              }
             }
+          }
         }
+
         
         // ========================================
         // STAGE 7: DEPLOY TO STAGING (Required - Task Step 8)
