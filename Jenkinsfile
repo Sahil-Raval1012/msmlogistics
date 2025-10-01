@@ -50,7 +50,7 @@ pipeline {
                 echo "================================================"
 
                 script {
-                    sh 'npm run test:coverage'
+                    sh 'npm run test'
                     echo "✅ Vitest execution completed"
                 }
             }
