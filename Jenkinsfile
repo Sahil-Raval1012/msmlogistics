@@ -73,7 +73,7 @@ pipeline {
                 
                 script {
                     // Clean install for reproducible builds
-                    sh 'npm ci --prefer-offline'
+                    sh 'npm install'
                     
                     // Build the application
                     sh 'npm run build'
