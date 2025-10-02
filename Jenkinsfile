@@ -15,7 +15,7 @@ pipeline {
         BUILD_VERSION = "${BUILD_NUMBER}"
         
         SONAR_HOST_URL = 'https://sonarcloud.io'
-        SONAR_ORGANIZATION = 'your-org-key'
+
         
         STAGING_URL = 'http://localhost:3000'
         PRODUCTION_URL = 'https://msmtranslink.com'
